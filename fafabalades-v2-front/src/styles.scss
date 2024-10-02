@@ -1,0 +1,43 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'bootstrap/scss/bootstrap';
+@import 'ngx-toastr/toastr';
+@import 'leaflet/dist/leaflet.css';
+@import "@ng-select/ng-select/themes/default.theme.css";
+
+body, .modal-body, .modal-header {
+    background-color: #1a1a1a;
+    color: white;
+}   
+
+.user-marker {
+    border-radius: 50%;
+    border: 2px solid #cccccc;
+}
+.logged-marker {
+    z-index: 5000 !important;
+}
+.user-tooltip {
+    background-color: transparent !important;
+    color: #cccccc !important;
+    text-shadow: 1px 0 #222, -1px 0 #222, 0 1px #222, 0 -1px #222,
+                 1px 1px #222, -1px 1px #222, -1px 1px #222, -1px -1px #222;
+    border: none !important;
+    box-shadow: none !important;
+}
+.user-tooltip::before {
+    border-bottom-color: transparent !important;
+}
+
+.tower-tooltip {
+    background-color: transparent !important;
+    color: #87cefa !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+.tower-tooltip::before {
+    border-bottom-color: transparent !important;
+}
+.action-popup {
+    width: 220px;
+}
+

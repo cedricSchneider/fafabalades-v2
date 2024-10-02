@@ -1,0 +1,23 @@
+<div class="map-page-container d-flex h-100">
+    <div id="map-demo" class="map-container">
+    </div>
+
+    <div id="right-panel" class="right-panel">
+        <div class="map-selector-container text-center mt-4 mb-4">
+            <img src="images/sky.png" class="map-select-btn disabled" [ngClass]="{unselected: currentMapId != 1, disabled: drawingMode}" (click)="clickSelectMap(1)">
+            <img src="images/overworld.png" class="map-select-btn mx-3" [ngClass]="{unselected: currentMapId != 2, disabled: drawingMode}" (click)="clickSelectMap(2)">
+        </div>
+        <div>
+            Crédits disponibles : {{ profile.credits | distance }}
+        </div>
+        <div>
+            <button class="btn btn-primary" (click)="startDrawing()" *ngIf="!drawingMode" [disabled]="profile.credits == 0">Commencer à tracer un chemin</button>
+            <button class="btn btn-primary" (click)="submitDrawing()" *ngIf="drawingMode">Valider votre tracé</button>
+        </div>
+        <!-- <div>
+            <div *ngFor="let area of mapService.skyAreas">
+                {{ area.name }}: new L.LatLng({{ mapService.convertToLatLng(area.coords[0], area.coords[1]) }})
+            </div>
+        </div> -->
+    </div>
+</div>
