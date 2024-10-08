@@ -7,11 +7,20 @@
     background-color: black;
     animation: fadeInOpacity 0.3s forwards;
     overflow: hidden;
+    &.dialogue-close {
+        opacity: 0.7;
+        animation: fadeOutOpacity 0.3s forwards 0.3s;
+    }
 }
 
 @keyframes fadeInOpacity {
     from { opacity: 0; }
     to { opacity: 0.7; }
+}
+
+@keyframes fadeOutOpacity {
+    from { opacity: 0.7; }
+    to { opacity: 0; }
 }
 
 .dialogue-main-container {
@@ -43,12 +52,22 @@
             opacity: 0.8;
         }
     }
+
+    &.dialogue-close {
+        animation: slideOutContent 0.3s forwards;
+    }
 }
 
 @keyframes slideInContent {
     from { left: 100%; }
     to { left: calc(100% - 700px); }
 }
+
+@keyframes slideOutContent {
+    from { left: calc(100% - 700px); }
+    to { left: 100%; }
+}
+
 
 .dialogue-header {
     height: 300px;

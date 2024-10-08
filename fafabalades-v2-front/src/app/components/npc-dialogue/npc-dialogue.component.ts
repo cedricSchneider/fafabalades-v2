@@ -13,6 +13,7 @@ export class NpcDialogueComponent implements OnInit, OnChanges {
   @Input() public npc: Npc;
   @Output() onClose: EventEmitter<void> = new EventEmitter<void>();
   public dialogueContent: string = '';
+  public closing: boolean = false;
 
   private dialogueDelay: number = 800;
   private letterDelay: number = 30;
@@ -38,8 +39,12 @@ export class NpcDialogueComponent implements OnInit, OnChanges {
   }
 
   public close() {
-    this.npc = null;
-    this.dialogueContent = '';
-    this.onClose.emit();
+    this.closing = true;
+    setTimeout(() => {
+      this.npc = null;
+      this.dialogueContent = '';
+      this.onClose.emit();
+      this.closing = false;
+    }, 600);
   }
 }
