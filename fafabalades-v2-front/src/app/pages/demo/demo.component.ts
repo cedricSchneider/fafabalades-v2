@@ -7,17 +7,18 @@ import { DistancePipe } from '../../pipes/distance.pipe';
 import { PathSegment } from '../../models/pathSegment';
 import { MapService } from '../../services/map.service';
 import { UserMap } from '../../models/userMap';
-import { MapPin } from '../../models/mapPin';
 import { PathRecordMap } from '../../models/pathRecordMap';
 import { PathRecordBody } from '../../models/form/pathRecordBody';
 import { PathRecord } from '../../models/pathRecord';
-import { MapPinWithMarker } from '../../models/mapPinWithMarker';
+import { MapPin } from '../../models/mapPin';
 import { MapPinActionComponent } from '../../components/map-pin-action/map-pin-action.component';
+import { Npc } from '../../models/npc';
+import { NpcDialogueComponent } from '../../components/npc-dialogue/npc-dialogue.component';
 
 @Component({
   selector: 'app-demo',
   standalone: true,
-  imports: [CommonModule,DistancePipe],
+  imports: [CommonModule,DistancePipe,NpcDialogueComponent],
   templateUrl: './demo.component.html',
   styleUrl: './demo.component.scss'
 })
@@ -34,10 +35,14 @@ export class DemoComponent implements OnInit, AfterViewInit {
   private centerPosition: L.LatLng = new L.LatLng(-62.375, 67.26049260834347);
   private saveCoords: L.LatLng;
   private saveZoom: number;
-  private towers: MapPinWithMarker[] = [];
-  private skyAreas: MapPinWithMarker[] = [];
+  private towers: MapPin<void>[] = [];
+  private skyAreas: MapPin<void>[] = [];
 
-  private drawSegments: DrawSegmentElt[] = [];
+  private npcMarkers: MapPin<Npc>[] = [];
+  private npcs: Npc[] = [];
+  public dialogueNpc: Npc = null;
+
+  public drawSegments: DrawSegmentElt[] = [];
   private currentSegmentId: number = null;
 
   public isDrawing: boolean = false;
@@ -66,6 +71,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.getUsers();
+    this.getNpcs();
     this.getRecords();    
   }
 
@@ -94,6 +100,19 @@ export class DemoComponent implements OnInit, AfterViewInit {
         mapId: 2
       },
     ];
+  }
+
+  private getNpcs() {
+    this.npcs = [{
+      id: 1,
+      name: 'Babil',
+      mapId: 2,
+      position: [-3580, 1810],
+      icon: 'https://www.zeldadungeon.net/wiki/images/thumb/4/4f/Tulin_-_TotK_key_art_nobg.png/400px-Tulin_-_TotK_key_art_nobg.png',
+      picture: 'https://www.zeldadungeon.net/wiki/images/thumb/4/4f/Tulin_-_TotK_key_art_nobg.png/400px-Tulin_-_TotK_key_art_nobg.png',
+      dialogueContent: 'Salut voyageur, je suis Babil du Village Piaf !\nJ\'aime faire tomber le loot dans le vide ouais ouais ouais !',
+      dialogueSound: '',
+    }]
   }
 
   private getRecords() {
@@ -140,7 +159,8 @@ export class DemoComponent implements OnInit, AfterViewInit {
     this.towers = [];
     if (this.currentMapId == 2) {
       this.mapService.towers.forEach((tower) => {
-        const marker = new L.Marker(tower.latLng, { 
+        const latLng = L.latLng(this.mapService.convertToLatLng(tower.coords[0], tower.coords[1]));
+        const marker = new L.Marker(latLng, { 
           icon: L.icon({ 
             iconUrl: 'icons/tower.png', 
             iconSize: [20, 28],
@@ -151,9 +171,9 @@ export class DemoComponent implements OnInit, AfterViewInit {
         this.towers.push({
           name: tower.name,
           coords: tower.coords,
-          latLng: tower.latLng,
           mapId: tower.mapId,
-          marker: marker
+          marker: marker,
+          entity: null
         });
       });
     }
@@ -161,7 +181,8 @@ export class DemoComponent implements OnInit, AfterViewInit {
     this.skyAreas = [];
     if (this.currentMapId == 1) {
       this.mapService.skyAreas.forEach((area) => {
-        const marker = new L.Marker(area.latLng, { 
+        const latLng = L.latLng(this.mapService.convertToLatLng(area.coords[0], area.coords[1]));
+        const marker = new L.Marker(latLng, {
           icon: L.icon({ 
             iconUrl: 'icons/arrowDown.png', 
             iconSize: [20, 20],
@@ -172,12 +193,34 @@ export class DemoComponent implements OnInit, AfterViewInit {
         this.skyAreas.push({
           name: area.name,
           coords: area.coords,
-          latLng: area.latLng,
           mapId: area.mapId,
-          marker: marker
+          marker: marker,
+          entity: null
         });
       });
     }
+
+    this.npcMarkers = [];
+    this.npcs.forEach((npc) => {
+      if (npc.mapId == this.currentMapId) {
+        const latLng = L.latLng(this.mapService.convertToLatLng(npc.position[0], npc.position[1]));
+        const marker = new L.Marker(latLng, { 
+          icon: L.icon({ 
+            iconUrl: npc.icon, 
+            iconSize: [64, 64],
+            iconAnchor: [32, 32],
+          })
+        }).bindTooltip(npc.name, { permanent: true, direction: 'bottom', className: 'npc-tooltip', opacity: 1 });
+        this.map.addLayer(marker);
+        this.npcMarkers.push({
+          name: npc.name,
+          coords: npc.position,
+          mapId: npc.mapId,
+          marker: marker,
+          entity: npc
+        });        
+      }
+    });    
 
     this.drawLines();
     this.drawUsers();
@@ -220,7 +263,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
   private drawUsers() {
     this.users.forEach((u) => {
       u.marker = null;
-      if (u.mapId == this.currentMapId) {
+      if (u.mapId == this.currentMapId || (u.userId == this.profile.userId && this.profile.mapId == this.currentMapId)) {
         u.marker = new L.Marker(
           u.userId == this.profile.userId ? this.mapService.convertToLatLng(this.profile.position[0], this.profile.position[1]) : this.mapService.convertToLatLng(u.position[0], u.position[1])
           , {
@@ -254,35 +297,30 @@ export class DemoComponent implements OnInit, AfterViewInit {
     }
 
     this.map.flyTo(latLng, this.map.getMaxZoom() - 1);
-    /* this.drawSegments = [{
-      distance: 0,
-      id: new Date().getTime(),
-      lines: L.polyline([latLng])
-    }]; */
+    this.checkMapActions();
   }
 
-  public getMapPinDistance(pin: MapPin): number {
+  public getMapPinDistance(pin: MapPin<any>): number {
     return this.mapService.getDistance(this.profile.position[0], this.profile.position[1], pin.coords[0], pin.coords[1]);
   }
 
   public checkMapActions() {
     if (this.currentMapId == 2) {
-      this.canGoSky();
+      this.checkTowers();
     } else if (this.currentMapId == 1) {
-      this.canGoSurface();
+      this.checkSkyAreas();
     }
+    this.checkNpcs();
   }
 
-  public canGoSky() {
-    let found: boolean = false;
-    for (let i = 0; i < this.towers.length && !found; i++) {
+  public checkTowers() {
+    for (let i = 0; i < this.towers.length; i++) {
       const tower = this.towers[i];
       if (this.getMapPinDistance(tower) <= this.mapService.actionDistance) {
         if (!tower.marker.isPopupOpen()) {
           const component = this.viewContainerRef.createComponent(MapPinActionComponent);
           component.instance.action = () => { this.goToMap(1) };
           component.instance.buttonContent = 'Activer la tour';
-          component.location.nativeElement;
           tower.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
             closeButton: false,
@@ -292,23 +330,23 @@ export class DemoComponent implements OnInit, AfterViewInit {
             className: 'action-popup'
           })).openPopup();
         }
-        found = true;
-      } else if (tower.marker.isPopupOpen()) {
-        tower.marker.closePopup();
+      } else {
+        if (tower.marker.isPopupOpen()) {
+          tower.marker.closePopup();
+        }
+        tower.marker.unbindPopup();
       }
     }
   }
 
-  public canGoSurface() {
-    let found: boolean = false;
-    for (let i = 0; i < this.skyAreas.length && !found; i++) {
+  public checkSkyAreas() {
+    for (let i = 0; i < this.skyAreas.length; i++) {
       const area = this.skyAreas[i];
       if (this.getMapPinDistance(area) <= this.mapService.actionDistance) {
         if (!area.marker.isPopupOpen()) {
           const component = this.viewContainerRef.createComponent(MapPinActionComponent);
           component.instance.action = () => { this.goToMap(2) };
           component.instance.buttonContent = 'Retour à la surface';
-          component.location.nativeElement;
           area.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
             closeButton: false,
@@ -318,16 +356,47 @@ export class DemoComponent implements OnInit, AfterViewInit {
             className: 'action-popup'
           })).openPopup();
         }
-        found = true;
-      } else if (area.marker.isPopupOpen()) {
-        area.marker.closePopup();
+      } else {
+        if (area.marker.isPopupOpen()) {
+          area.marker.closePopup();
+        }
+        area.marker.unbindPopup();
       }
     }
   }
 
+  public checkNpcs() {
+    for (let i = 0; i < this.npcMarkers.length; i++) {
+      const npc = this.npcMarkers[i];
+      if (this.getMapPinDistance(npc) <= this.mapService.actionDistance) {
+        if (!npc.marker.isPopupOpen()) {
+          const component = this.viewContainerRef.createComponent(MapPinActionComponent);
+          component.instance.action = () => { this.talkToNpc(npc.entity) };
+          component.instance.buttonContent = 'Parler';
+          npc.marker.bindPopup(L.popup({
+            content: component.location.nativeElement,
+            closeButton: false,
+            autoClose: false,
+            closeOnClick: false,
+            closeOnEscapeKey: false,
+            className: 'action-popup'
+          })).openPopup();
+        }
+      } else {
+        if (npc.marker.isPopupOpen()) {
+          npc.marker.closePopup();
+        }
+        npc.marker.unbindPopup();
+      }
+    }
+  }
+
+  public talkToNpc(npc: Npc) {
+    this.dialogueNpc = Object.assign({}, npc);
+  }
+
   public goToMap(mapId: number) {
     this.profile.mapId = mapId;
-    this.users.filter((u) => u.userId == this.profile.userId)[0].mapId = mapId;
     this.selectMap(mapId);
   }
 
@@ -399,6 +468,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
         that.drawSegments[that.drawSegments.length - 1].line.addTo(that.map);
         that.moveMarker(that.profile.userId, destinationCheck.destination);
         that.profile.position = that.mapService.convertToXY(destinationCheck.destination);
+        that.checkMapActions();
         that.map.dragging.disable();
       }
     }
@@ -422,6 +492,39 @@ export class DemoComponent implements OnInit, AfterViewInit {
     }
   }
 
+  public cancelSegment() {
+    if (this.drawSegments.length > 0) {
+      const toRemoveId = this.drawSegments[this.drawSegments.length - 1].segmentId;
+      this.drawSegments.forEach((segment) => {
+        if (segment.segmentId == toRemoveId) {
+          this.map.removeLayer(segment.line);
+          this.profile.credits += segment.distance;
+        }
+      });
+      this.drawSegments = this.drawSegments.filter((x) => x.segmentId != toRemoveId);
+      let newLatLng: L.LatLng;
+      let newMapId: number;
+      if (this.drawSegments.length > 0) {
+        const latLngs = this.drawSegments[this.drawSegments.length - 1].line.getLatLngs() as L.LatLng[];
+        newLatLng = latLngs[latLngs.length - 1];
+        newMapId = this.drawSegments[this.drawSegments.length - 1].mapId;
+      } else {
+        const user = this.users.filter((x) => x.userId == this.profile.userId)[0];
+        newLatLng = L.latLng(this.mapService.convertToLatLng(user.position[0], user.position[1]));
+        newMapId = user.mapId;
+      }
+
+      this.profile.position = this.mapService.convertToXY(newLatLng);
+      this.profile.mapId = newMapId;
+      if (this.currentMapId != newMapId) {
+        this.selectMap(newMapId);
+      } else {
+        this.moveMarker(this.profile.userId, newLatLng);
+      }
+      this.checkMapActions();
+    }
+  }
+
   public changeDisplayMode() {
 
   }
@@ -440,12 +543,30 @@ export class DemoComponent implements OnInit, AfterViewInit {
     this.drawSegments = [];
   }
 
+  public disableAllPopups() {
+    this.towers.forEach((x) => {
+      if (x.marker.isPopupOpen()) {
+        x.marker.closePopup();
+      }
+      x.marker.unbindPopup();
+    });
+    this.skyAreas.forEach((x) => {
+      if (x.marker.isPopupOpen()) {
+        x.marker.closePopup();
+      }
+      x.marker.unbindPopup();
+    });
+    this.npcMarkers.forEach((x) => {
+      if (x.marker.isPopupOpen()) {
+        x.marker.closePopup();
+      }
+      x.marker.unbindPopup();
+    });
+  }
+
   public submitDrawing() {
+    const pathToSend: PathRecordBody[] = []; 
     if (this.drawSegments.length > 0) {
-      this.drawingMode = false;
-      this.loadingSubmitPath = true;
-  
-      const pathToSend: PathRecordBody[] = []; 
       const now = new Date().toISOString();
   
       let currentRecord: PathRecordBody = null;
@@ -493,14 +614,20 @@ export class DemoComponent implements OnInit, AfterViewInit {
         }
         this.pathRecords.push(pathRecord);
       });
-  
-      const user = this.users.filter((u) => u.userId == this.profile.userId)[0];
-      user.mapId = this.profile.mapId;
-  
+    
       this.cleanDrawSegments();
-      this.loadingSubmitPath = false;
-      // TODO send data to server
-      // TODO send mapId !!!  
     }
+
+    const user = this.users.filter((u) => u.userId == this.profile.userId)[0];
+    if (this.profile.mapId != user.mapId || pathToSend.length > 0) {
+      this.loadingSubmitPath = true;
+      // TODO send pathToSend & mapId to server
+      this.loadingSubmitPath = false;
+    }
+
+    user.mapId = this.profile.mapId;
+    user.position = this.profile.position;
+    this.disableAllPopups();
+    this.drawingMode = false;
   }
 }

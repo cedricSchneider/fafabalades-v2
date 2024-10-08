@@ -23,6 +23,7 @@
     "angular-oauth2-oidc": "^17.0.2",
     "angular-oauth2-oidc-jwks": "^17.0.2",
     "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
     "leaflet": "^1.9.4",
     "ngx-color-picker": "^17.0.0",
     "ngx-toastr": "^19.0.0",

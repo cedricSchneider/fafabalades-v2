@@ -13,6 +13,9 @@
         <div>
             <button class="btn btn-primary" (click)="startDrawing()" *ngIf="!drawingMode" [disabled]="profile.credits == 0">Commencer à tracer un chemin</button>
             <button class="btn btn-primary" (click)="submitDrawing()" *ngIf="drawingMode">Valider votre tracé</button>
+            <button class="btn btn-secondary ms-1" (click)="cancelSegment()" *ngIf="drawingMode" [disabled]="drawSegments.length == 0">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
         </div>
         <!-- <div>
             <div *ngFor="let area of mapService.skyAreas">
@@ -21,3 +24,5 @@
         </div> -->
     </div>
 </div>
+
+<app-npc-dialogue [npc]="dialogueNpc"></app-npc-dialogue>

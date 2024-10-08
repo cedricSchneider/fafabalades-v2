@@ -3,6 +3,7 @@
 @import 'ngx-toastr/toastr';
 @import 'leaflet/dist/leaflet.css';
 @import "@ng-select/ng-select/themes/default.theme.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
 
 body, .modal-body, .modal-header {
     background-color: #1a1a1a;
@@ -37,7 +38,23 @@ body, .modal-body, .modal-header {
 .tower-tooltip::before {
     border-bottom-color: transparent !important;
 }
-.action-popup {
-    width: 220px;
+
+.npc-tooltip {
+    background-color: transparent !important;
+    color: #cccccc !important;
+    text-shadow: 1px 0 #222, -1px 0 #222, 0 1px #222, 0 -1px #222,
+                 1px 1px #222, -1px 1px #222, -1px 1px #222, -1px -1px #222;
+    border: none !important;
+    box-shadow: none !important;
+}
+.npc-tooltip::before {
+    border-bottom-color: transparent !important;
 }
 
+.action-popup {
+    width: 220px;
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+        background-color: transparent;
+        box-shadow: none;
+    }
+}

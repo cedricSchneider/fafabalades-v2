@@ -1,0 +1,13 @@
+
+<div class="dialogue-main-container" [style]="{ 'visibility': npc != null ? 'visible' : 'hidden' }">
+    <div class="dialogue-content" *ngIf="npc != null">
+        <i (click)="close()" class="close-btn bi bi-x-lg"></i>
+        <div class="dialogue-header">
+            <img class="npc-pic" src="{{ npc.picture }}">
+        </div>
+        <div class="dialogue-text">
+            {{ dialogueContent }}
+        </div>
+    </div>
+    <div class="dialogue-overlay" *ngIf="npc != null"></div>
+</div>

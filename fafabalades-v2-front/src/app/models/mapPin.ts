@@ -1,8 +1,9 @@
 import * as L from 'leaflet';
 
-export interface MapPin {
+export interface MapPin<T> {
     name: string;
-    latLng: L.LatLng;
     mapId: number;
     coords: number[];
+    marker: L.Marker;
+    entity: T;
 }
