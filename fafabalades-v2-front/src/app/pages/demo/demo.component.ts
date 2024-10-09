@@ -14,11 +14,13 @@ import { MapPin } from '../../models/mapPin';
 import { MapPinActionComponent } from '../../components/map-pin-action/map-pin-action.component';
 import { Npc } from '../../models/npc';
 import { NpcDialogueComponent } from '../../components/npc-dialogue/npc-dialogue.component';
+import { Boss } from '../../models/boss';
+import { BossFightComponent } from '../../components/boss-fight/boss-fight.component';
 
 @Component({
   selector: 'app-demo',
   standalone: true,
-  imports: [CommonModule,DistancePipe,NpcDialogueComponent],
+  imports: [CommonModule, DistancePipe, NpcDialogueComponent, BossFightComponent],
   templateUrl: './demo.component.html',
   styleUrl: './demo.component.scss'
 })
@@ -41,6 +43,10 @@ export class DemoComponent implements OnInit, AfterViewInit {
   private npcMarkers: MapPin<Npc>[] = [];
   private npcs: Npc[] = [];
   public dialogueNpc: Npc = null;
+
+  private bossMarkers: MapPin<Boss>[] = [];
+  private bosses: Boss[]= [];
+  public fightingBoss: Boss = null;
 
   public drawSegments: DrawSegmentElt[] = [];
   private currentSegmentId: number = null;
@@ -73,6 +79,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
     this.getUsers();
     this.getNpcs();
     this.getRecords();    
+    this.getBosses();
   }
 
   ngAfterViewInit(): void {
@@ -113,6 +120,19 @@ export class DemoComponent implements OnInit, AfterViewInit {
       dialogueContent: 'Salut voyageur, je suis Babil du Village Piaf !\nJ\'aime faire tomber le loot dans le vide ouais ouais ouais !',
       dialogueSound: '',
     }]
+  }
+
+  private getBosses() {
+    this.bosses = [{
+      id: 1,
+      name: 'Ganon',
+      mapId: 2,
+      position: [-254, 1062],
+      life: 10000,
+      totalLife: 10000,
+      icon: 'https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4d/BotW_Calamity_Ganon_Artwork.png',
+      picture: 'https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4d/BotW_Calamity_Ganon_Artwork.png',
+    }];
   }
 
   private getRecords() {
@@ -220,7 +240,29 @@ export class DemoComponent implements OnInit, AfterViewInit {
           entity: npc
         });        
       }
-    });    
+    });
+
+    this.bossMarkers = [];
+    this.bosses.forEach((boss) => {
+      if (boss.mapId == this.currentMapId) {
+        const latLng = L.latLng(this.mapService.convertToLatLng(boss.position[0], boss.position[1]));
+        const marker = new L.Marker(latLng, { 
+          icon: L.icon({ 
+            iconUrl: boss.icon, 
+            iconSize: [80, 80],
+            iconAnchor: [40, 40],
+          })
+        }).bindTooltip(boss.name, { permanent: true, direction: 'bottom', className: 'npc-tooltip', opacity: 1 });
+        this.map.addLayer(marker);
+        this.bossMarkers.push({
+          name: boss.name,
+          coords: boss.position,
+          mapId: boss.mapId,
+          marker: marker,
+          entity: boss
+        });        
+      }
+    });
 
     this.drawLines();
     this.drawUsers();
@@ -311,6 +353,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
       this.checkSkyAreas();
     }
     this.checkNpcs();
+    this.checkBosses();
   }
 
   public checkTowers() {
@@ -391,9 +434,40 @@ export class DemoComponent implements OnInit, AfterViewInit {
     }
   }
 
+  public checkBosses() {
+    for (let i = 0; i < this.bossMarkers.length; i++) {
+      const boss = this.bossMarkers[i];
+      if (this.getMapPinDistance(boss) <= this.mapService.actionDistance) {
+        if (!boss.marker.isPopupOpen()) {
+          const component = this.viewContainerRef.createComponent(MapPinActionComponent);
+          component.instance.action = () => { this.fightBoss(boss.entity) };
+          component.instance.buttonContent = 'Attaquer';
+          boss.marker.bindPopup(L.popup({
+            content: component.location.nativeElement,
+            closeButton: false,
+            autoClose: false,
+            closeOnClick: false,
+            closeOnEscapeKey: false,
+            className: 'action-popup'
+          })).openPopup();
+        }
+      } else {
+        if (boss.marker.isPopupOpen()) {
+          boss.marker.closePopup();
+        }
+        boss.marker.unbindPopup();
+      }
+    }
+  }  
+
   public talkToNpc(npc: Npc) {
     this.dialogueNpc = Object.assign({}, npc);
   }
+
+  public fightBoss(boss: Boss) {
+    this.fightingBoss = Object.assign({}, boss);
+  }
+
 
   public goToMap(mapId: number) {
     this.profile.mapId = mapId;
@@ -557,6 +631,12 @@ export class DemoComponent implements OnInit, AfterViewInit {
       x.marker.unbindPopup();
     });
     this.npcMarkers.forEach((x) => {
+      if (x.marker.isPopupOpen()) {
+        x.marker.closePopup();
+      }
+      x.marker.unbindPopup();
+    });
+    this.bossMarkers.forEach((x) => {
       if (x.marker.isPopupOpen()) {
         x.marker.closePopup();
       }
