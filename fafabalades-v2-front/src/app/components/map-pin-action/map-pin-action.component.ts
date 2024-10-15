@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { Profile } from '../../models/profile';
 
 @Component({
   selector: 'app-map-pin-action',
@@ -11,4 +12,5 @@ import { Component } from '@angular/core';
 export class MapPinActionComponent {
   public buttonContent: string;
   public action: () => void;
+  public disabled: boolean = false;
 }

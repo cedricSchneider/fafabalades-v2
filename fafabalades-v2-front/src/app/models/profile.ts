@@ -1,4 +1,4 @@
-import { PathRecord } from "./pathRecord";
+import { Item } from "./item";
 
 export interface Profile {
     userId: string;
@@ -6,4 +6,5 @@ export interface Profile {
     color: string;
     position: number[];
     mapId: number;
+    inventory: Item[];
 }

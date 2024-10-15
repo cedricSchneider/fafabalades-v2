@@ -1,0 +1,15 @@
+<div class="inventory-container">
+    <div *ngFor="let item of inventory" class="item"  [ngbTooltip]="tooltipContent" (mouseover)="hoverItem = item">
+        <img src="{{ item.picture }}">
+    </div>
+    <div *ngIf="inventory.length == 0">
+        Votre inventaire est vide pour le moment.
+    </div>
+</div>
+
+<ng-template #tooltipContent>
+    <h5>{{ hoverItem.displayName }}</h5>
+    <div class="small">
+        {{ hoverItem.description }}
+    </div>
+</ng-template>

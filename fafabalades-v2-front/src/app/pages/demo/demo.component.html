@@ -7,23 +7,37 @@
             <img src="images/sky.png" class="map-select-btn disabled" [ngClass]="{unselected: currentMapId != 1, disabled: drawingMode}" (click)="clickSelectMap(1)">
             <img src="images/overworld.png" class="map-select-btn mx-3" [ngClass]="{unselected: currentMapId != 2, disabled: drawingMode}" (click)="clickSelectMap(2)">
         </div>
-        <div>
-            Crédits disponibles : {{ profile.credits | distance }}
-        </div>
-        <div>
-            <button class="btn btn-primary" (click)="startDrawing()" *ngIf="!drawingMode" [disabled]="profile.credits == 0">Commencer à tracer un chemin</button>
-            <button class="btn btn-primary" (click)="submitDrawing()" *ngIf="drawingMode">Valider votre tracé</button>
-            <button class="btn btn-secondary ms-1" (click)="cancelSegment()" *ngIf="drawingMode" [disabled]="drawSegments.length == 0">
-                <i class="bi bi-arrow-counterclockwise"></i>
-            </button>
-        </div>
-        <!-- <div>
-            <div *ngFor="let area of mapService.skyAreas">
-                {{ area.name }}: new L.LatLng({{ mapService.convertToLatLng(area.coords[0], area.coords[1]) }})
-            </div>
-        </div> -->
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+            <li [ngbNavItem]="1" class="w-50">
+                <button ngbNavLink class="w-100" [disabled]="drawingMode" (click)="activeTab = 1">
+                    <i class="bi bi-person-walking"></i> Balade
+                </button>
+                <ng-template ngbNavContent>
+                    <div>
+                        Crédits disponibles : {{ profile.credits | distance }}
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" (click)="startDrawing()" *ngIf="!drawingMode" [disabled]="profile.credits == 0">Commencer à tracer un chemin</button>
+                        <button class="btn btn-primary" (click)="submitDrawing()" *ngIf="drawingMode">Valider votre tracé</button>
+                        <button class="btn btn-secondary ms-1" (click)="cancelSegment()" *ngIf="drawingMode" [disabled]="drawSegments.length == 0">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </ng-template>
+            </li>
+
+            <li [ngbNavItem]="2" class="w-50">
+                <button ngbNavLink class="w-100" [disabled]="drawingMode" (click)="activeTab = 2">
+                    <i class="bi bi-backpack2-fill"></i> Inventaire
+                </button>
+                <ng-template ngbNavContent>
+                    <app-inventory [inventory]="profile.inventory"></app-inventory>
+                </ng-template>
+            </li>
+        </ul>
+        <div [ngbNavOutlet]="nav" class="mt-2 w-100 nav-container"></div>
     </div>
 </div>
 
 <app-npc-dialogue [npc]="dialogueNpc"></app-npc-dialogue>
-<app-boss-fight [boss]="fightingBoss"></app-boss-fight>
+<app-boss-fight [boss]="fightingBoss" [profile]="profile"></app-boss-fight>

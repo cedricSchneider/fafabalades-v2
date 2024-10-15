@@ -24,8 +24,14 @@
         font-size: 0.85rem;
     }
 
-    .right-panel-content {
-        height: calc(100% - 45px);
+    .nav-container {
+        height: calc(100% - 117px - 3rem - 0.75rem);
+        margin-top: 0.75rem;
+        ::ng-deep {
+            .tab-pane {
+                height: 100% !important;
+            }
+        }
     }
 
     .map-select-btn {

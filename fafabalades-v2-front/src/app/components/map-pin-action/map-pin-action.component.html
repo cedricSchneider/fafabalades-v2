@@ -1,5 +1,5 @@
 <div class="text-center">
-    <button class="btn btn-primary" (click)="action()">
+    <button class="btn btn-primary" [disabled]="disabled" (click)="action()">
         {{ buttonContent }}
     </button>    
 </div>

@@ -1,0 +1,19 @@
+.inventory-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+    gap: 1rem;
+    max-height: 100%;
+    overflow-y: auto;
+    .item {
+        border: 2px solid #dddddd;
+        border-radius: 0.5rem;
+        background-color: transparent;
+        width: 96px;
+        height: 96px;
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    }
+}

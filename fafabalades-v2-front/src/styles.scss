@@ -10,6 +10,47 @@ body, .modal-body, .modal-header {
     color: white;
 }   
 
+div::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+div::-webkit-scrollbar-track {
+    background-color: lightgray;
+}
+div::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+div {
+    @supports not selector(::-webkit-scrollbar) {
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #777777 #cccccc;
+        }
+    }
+}
+
+body::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+body::-webkit-scrollbar-track {
+    background-color: lightgray;
+}
+body::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    @supports not selector(::-webkit-scrollbar) {
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #777777 #cccccc;
+        }
+    }
+}
+
+
 .user-marker {
     border-radius: 50%;
     border: 2px solid #cccccc;

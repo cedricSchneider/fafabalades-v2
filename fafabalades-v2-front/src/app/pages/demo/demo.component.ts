@@ -4,28 +4,30 @@ import * as L from 'leaflet';
 import { DrawSegmentElt } from '../../models/drawSegment';
 import { Profile } from '../../models/profile';
 import { DistancePipe } from '../../pipes/distance.pipe';
-import { PathSegment } from '../../models/pathSegment';
 import { MapService } from '../../services/map.service';
 import { UserMap } from '../../models/userMap';
 import { PathRecordMap } from '../../models/pathRecordMap';
 import { PathRecordBody } from '../../models/form/pathRecordBody';
-import { PathRecord } from '../../models/pathRecord';
 import { MapPin } from '../../models/mapPin';
 import { MapPinActionComponent } from '../../components/map-pin-action/map-pin-action.component';
 import { Npc } from '../../models/npc';
 import { NpcDialogueComponent } from '../../components/npc-dialogue/npc-dialogue.component';
 import { Boss } from '../../models/boss';
 import { BossFightComponent } from '../../components/boss-fight/boss-fight.component';
+import { Chest } from '../../models/chest';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { InventoryComponent } from '../../components/inventory/inventory.component';
 
 @Component({
   selector: 'app-demo',
   standalone: true,
-  imports: [CommonModule, DistancePipe, NpcDialogueComponent, BossFightComponent],
+  imports: [CommonModule, DistancePipe, NpcDialogueComponent, BossFightComponent, NgbModule, InventoryComponent],
   templateUrl: './demo.component.html',
   styleUrl: './demo.component.scss'
 })
 export class DemoComponent implements OnInit, AfterViewInit {
 
+  public activeTab: number = 1;
   private map!: L.Map;
   public currentMapId: number = 2;
   private maxBounds: L.LatLngBounds = new L.LatLngBounds([
@@ -40,6 +42,9 @@ export class DemoComponent implements OnInit, AfterViewInit {
   private towers: MapPin<void>[] = [];
   private skyAreas: MapPin<void>[] = [];
 
+  private chestMarkers: MapPin<Chest>[] = [];
+  private chests: Chest[] = [];
+
   private npcMarkers: MapPin<Npc>[] = [];
   private npcs: Npc[] = [];
   public dialogueNpc: Npc = null;
@@ -47,21 +52,15 @@ export class DemoComponent implements OnInit, AfterViewInit {
   private bossMarkers: MapPin<Boss>[] = [];
   private bosses: Boss[]= [];
   public fightingBoss: Boss = null;
-
+  
   public drawSegments: DrawSegmentElt[] = [];
   private currentSegmentId: number = null;
 
   public isDrawing: boolean = false;
   public drawingMode: boolean = false;
-  public profile: Profile = {
-    userId: '1',
-    color: '#33ee99',
-    credits: 10000,
-    position: [0,0],
-    mapId: 2,
-  };
+  public profile: Profile = null;
 
-  public color: string = this.profile.color;
+  public color: string = null;
 
   public users: UserMap[] = [];
   public pathRecords: PathRecordMap[] = [];
@@ -76,14 +75,38 @@ export class DemoComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.getProfile();
     this.getUsers();
     this.getNpcs();
     this.getRecords();    
     this.getBosses();
+    this.getChests();
   }
 
   ngAfterViewInit(): void {
     this.initMap();
+  }
+
+  private getProfile() {
+    this.profile = {
+      userId: '1',
+      color: '#33ee99',
+      credits: 10000,
+      position: [0,0],
+      mapId: 2,
+      inventory: []
+    };
+    this.color = this.profile.color;
+
+    for (let i = 1; i <= 1; i++) {
+      this.profile.inventory.push({
+        id: i,
+        name: 'KEY',
+        displayName: 'Clé de coffre',
+        description: 'Une clé standard, utile pour ouvrir les coffres',
+        picture: 'images/KEY.png'
+      });
+    }
   }
 
   private getUsers() {
@@ -135,6 +158,18 @@ export class DemoComponent implements OnInit, AfterViewInit {
     }];
   }
 
+  private getChests() {
+    this.chests = [{
+      id: 1,
+      mapId: 2,
+      position: [1777, -983]
+    },{
+      id: 2,
+      mapId: 2,
+      position: [1760, -1923]
+    }];
+  }
+
   private getRecords() {
     this.pathRecords = [
       {
@@ -183,8 +218,8 @@ export class DemoComponent implements OnInit, AfterViewInit {
         const marker = new L.Marker(latLng, { 
           icon: L.icon({ 
             iconUrl: 'icons/tower.png', 
-            iconSize: [20, 28],
-            iconAnchor: [10, 14],
+            iconSize: [20, 26],
+            iconAnchor: [10, 13],
           })
         }).bindTooltip(tower.name, { permanent: true, direction: 'bottom', className: 'tower-tooltip', opacity: 1 });
         this.map.addLayer(marker);
@@ -261,6 +296,28 @@ export class DemoComponent implements OnInit, AfterViewInit {
           marker: marker,
           entity: boss
         });        
+      }
+    });
+
+    this.chestMarkers = [];
+    this.chests.forEach((chest) => {
+      if (chest.mapId == this.currentMapId) {
+        const latLng = L.latLng(this.mapService.convertToLatLng(chest.position[0], chest.position[1]));
+        const marker = new L.Marker(latLng, { 
+          icon: L.icon({ 
+            iconUrl: 'icons/chest.png', 
+            iconSize: [30, 25],
+            iconAnchor: [15, 12],
+          })
+        });
+        this.map.addLayer(marker);
+        this.chestMarkers.push({
+          name: 'chest-' + chest.id,
+          coords: chest.position,
+          mapId: chest.mapId,
+          marker: marker,
+          entity: chest
+        });
       }
     });
 
@@ -354,6 +411,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
     }
     this.checkNpcs();
     this.checkBosses();
+    this.checkChests();
   }
 
   public checkTowers() {
@@ -458,16 +516,56 @@ export class DemoComponent implements OnInit, AfterViewInit {
         boss.marker.unbindPopup();
       }
     }
-  }  
+  }
+
+  public checkChests() {
+    for (let i = 0; i < this.chestMarkers.length; i++) {
+      const chest = this.chestMarkers[i];
+      if (this.getMapPinDistance(chest) <= this.mapService.actionDistance) {
+        if (!chest.marker.isPopupOpen()) {
+          const component = this.viewContainerRef.createComponent(MapPinActionComponent);
+          component.instance.action = () => { this.openChest(chest.entity) };
+          component.instance.disabled = this.profile.inventory.filter((x) => x.name == 'KEY').length == 0;
+          component.instance.buttonContent = component.instance.disabled ? 'Clé nécessaire' : 'Ouvrir';
+          chest.marker.bindPopup(L.popup({
+            content: component.location.nativeElement,
+            closeButton: false,
+            autoClose: false,
+            closeOnClick: false,
+            closeOnEscapeKey: false,
+            className: 'action-popup'
+          })).openPopup();
+        }
+      } else {
+        if (chest.marker.isPopupOpen()) {
+          chest.marker.closePopup();
+        }
+        chest.marker.unbindPopup();
+      }
+    }
+  }
 
   public talkToNpc(npc: Npc) {
     this.dialogueNpc = Object.assign({}, npc);
+    this.submitDrawing(false);
   }
 
   public fightBoss(boss: Boss) {
     this.fightingBoss = Object.assign({}, boss);
+    this.submitDrawing(false);
   }
 
+  public openChest(chest: Chest) {
+    const key = this.profile.inventory.filter((x) => x.name == 'KEY')[0];
+
+    // consume key & chest (api call)
+
+    const chestToRemove = this.chestMarkers.filter((x) => x.entity.id == chest.id)[0];
+    this.profile.inventory = this.profile.inventory.filter((x) => x.id != key.id);
+    this.map.removeLayer(chestToRemove.marker);
+    this.chestMarkers = this.chestMarkers.filter((x) => x.entity.id != chest.id);
+    this.submitDrawing(false);
+  }
 
   public goToMap(mapId: number) {
     this.profile.mapId = mapId;
@@ -644,7 +742,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
     });
   }
 
-  public submitDrawing() {
+  public submitDrawing(stopDrawing: boolean = true) {
     const pathToSend: PathRecordBody[] = []; 
     if (this.drawSegments.length > 0) {
       const now = new Date().toISOString();
@@ -707,7 +805,10 @@ export class DemoComponent implements OnInit, AfterViewInit {
 
     user.mapId = this.profile.mapId;
     user.position = this.profile.position;
-    this.disableAllPopups();
-    this.drawingMode = false;
+
+    if (stopDrawing) {
+      this.disableAllPopups();
+      this.drawingMode = false;
+    }
   }
 }

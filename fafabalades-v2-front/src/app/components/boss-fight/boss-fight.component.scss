@@ -78,6 +78,7 @@
     align-items: center;
     .pic-container {
         flex-grow: 1;   
+        min-height: 0px;
     }
     .boss-pic {
         height: 100%;
@@ -111,6 +112,11 @@
             animation: fadeIn 0.5s forwards 1.5s;
         }
     }
+}
+
+.boss-form {
+    opacity: 0;
+    animation: fadeIn 0.3s forwards 2.2s;
 }
 
 @keyframes fadeIn {

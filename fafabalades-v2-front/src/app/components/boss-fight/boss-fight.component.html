@@ -9,13 +9,36 @@
             <h2 class="boss-name">{{ boss.name }}</h2>
             <div class="hp-container">
                 <div class="life-bar-container">
-                    <div class="life-bar" style="width: {{ (boss.life / boss.totalLife) * 100 }}%;">
+                    <div class="life-bar" style="width: {{ (displayHp / boss.totalLife) * 100 }}%;">
                     </div>
                 </div>
-                <div class="hp-value">{{ boss.life }}/{{ boss.totalLife }}</div>
+                <div class="hp-value">
+                    <b>HP :</b>
+                    {{ displayHp | number:'1.0-0' }} / {{ boss.totalLife | number:'1.0-0' }}
+                </div>
             </div>
         </div>
-
+        <div class="boss-form mt-3 p-1" *ngIf="profile != null">
+            <form class="text-center" (ngSubmit)="validateForm()">
+                <div class="d-flex justify-content-center">
+                    <input [(ngModel)]="damage" (change)="checkDamageValue()" [ngModelOptions]="{standalone: true}" type="number" min="1" max="{{ maxDamage }}" class="form-control w-50">
+                </div>
+                <div>
+                    <button [disabled]="damage == null || damage > maxDamage || !isValidDamageFormat()" class="btn btn-primary mt-1 w-50">Valider</button>
+                </div>
+            </form>
+            <div class="mt-3">
+                <span *ngIf="isValidDamageFormat()">
+                    Coût : {{ damage * hpCost | number }} crédits
+                </span>
+                <span *ngIf="damage == null">
+                    Entrer la valeur des dégâts que vous souhaitez infliger
+                </span>
+            </div>
+            <div class="mt-1">
+                Crédits disponibles : {{ profile.credits | floor | number }}
+            </div>
+        </div>
     </div>
     <div class="boss-overlay" [ngClass]="{'boss-close': closing }" *ngIf="boss != null"></div>
 </div>
