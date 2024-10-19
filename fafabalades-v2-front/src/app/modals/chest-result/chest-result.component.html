@@ -1,0 +1,33 @@
+<div class="modal-header">
+    <h4 class="modal-title">
+        Coffre
+    </h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close()"></button>
+</div>
+<div class="modal-body">
+    <div class="chest-container">
+        <div class="chest-opening">
+            <div class="img-container p-5">
+                <img class="chest-img" src="images/chest.png">
+                <img class="key-img" src="images/key.png">
+            </div>
+        </div>
+        <div class="chest-content">
+            <div *ngIf="!data.loading" class="items-container">
+                <div *ngFor="let item of data.content" class="item" [ngbTooltip]="tooltipContent" (mouseover)="hoverItem = item">
+                    <img src="{{ item.picture }}">
+                </div>
+            </div>
+            <div class="p-2" *ngIf="data.loading">
+                <div class="spinner-border"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #tooltipContent>
+    <h5>{{ hoverItem.displayName }}</h5>
+    <div class="small">
+        {{ hoverItem.description }}
+    </div>
+</ng-template>

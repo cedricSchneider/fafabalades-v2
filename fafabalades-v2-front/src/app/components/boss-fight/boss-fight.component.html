@@ -1,43 +1,51 @@
 
 <div class="boss-main-container" [style]="{ 'visibility': boss != null ? 'visible' : 'hidden' }">
     <div class="boss-content" *ngIf="boss != null" [ngClass]="{'boss-close': closing }">
-        <i (click)="close()" class="close-btn bi bi-x-lg"></i>
-        <div class="boss-header">
-            <div class="pic-container">
-                <img class="boss-pic" src="{{ boss.picture }}">
-            </div>
-            <h2 class="boss-name">{{ boss.name }}</h2>
-            <div class="hp-container">
-                <div class="life-bar-container">
-                    <div class="life-bar" style="width: {{ (displayHp / boss.totalLife) * 100 }}%;">
+        <div *ngIf="!loadingActionSubmission">
+            <i (click)="close()" class="close-btn bi bi-x-lg"></i>
+            <div class="boss-header">
+                <div class="pic-container">
+                    <img class="boss-pic" src="{{ boss.picture }}">
+                </div>
+                <h2 class="boss-name">{{ boss.name }}</h2>
+                <div class="hp-container">
+                    <div class="life-bar-container">
+                        <div class="life-bar" style="width: {{ (displayHp / boss.totalLife) * 100 }}%;">
+                        </div>
+                    </div>
+                    <div class="hp-value">
+                        <b>HP :</b>
+                        {{ displayHp | number:'1.0-0' }} / {{ boss.totalLife | number:'1.0-0' }}
                     </div>
                 </div>
-                <div class="hp-value">
-                    <b>HP :</b>
-                    {{ displayHp | number:'1.0-0' }} / {{ boss.totalLife | number:'1.0-0' }}
-                </div>
             </div>
+            <div class="boss-form mt-3 p-1" *ngIf="profile != null">
+                <form class="text-center" (ngSubmit)="validateForm()" *ngIf="profile.credits >= 10">
+                    <div class="d-flex justify-content-center">
+                        <input [(ngModel)]="damage" (change)="checkDamageValue()" [ngModelOptions]="{standalone: true}" type="number" min="1" max="{{ maxDamage }}" class="form-control w-50">
+                    </div>
+                    <div>
+                        <button [disabled]="damage == null || damage > maxDamage || !isValidDamageFormat()" class="btn btn-primary mt-1 w-50">Valider</button>
+                    </div>
+                </form>
+                <div class="text-center" *ngIf="profile.credits < 10">
+                    Crédits insuffisants, au moins 10 crédits sont nécessaires pour infliger des dégâts au boss.
+                </div>
+                <div class="mt-3">
+                    <span *ngIf="isValidDamageFormat()">
+                        Coût : {{ damage * hpCost | number }} crédits
+                    </span>
+                    <span *ngIf="damage == null && profile.credits >= 10">
+                        Entrer la valeur des dégâts que vous souhaitez infliger
+                    </span>
+                </div>
+                <div class="mt-1">
+                    Crédits disponibles : {{ profile.credits | floor | number }}
+                </div>
+            </div>    
         </div>
-        <div class="boss-form mt-3 p-1" *ngIf="profile != null">
-            <form class="text-center" (ngSubmit)="validateForm()">
-                <div class="d-flex justify-content-center">
-                    <input [(ngModel)]="damage" (change)="checkDamageValue()" [ngModelOptions]="{standalone: true}" type="number" min="1" max="{{ maxDamage }}" class="form-control w-50">
-                </div>
-                <div>
-                    <button [disabled]="damage == null || damage > maxDamage || !isValidDamageFormat()" class="btn btn-primary mt-1 w-50">Valider</button>
-                </div>
-            </form>
-            <div class="mt-3">
-                <span *ngIf="isValidDamageFormat()">
-                    Coût : {{ damage * hpCost | number }} crédits
-                </span>
-                <span *ngIf="damage == null">
-                    Entrer la valeur des dégâts que vous souhaitez infliger
-                </span>
-            </div>
-            <div class="mt-1">
-                Crédits disponibles : {{ profile.credits | floor | number }}
-            </div>
+        <div class="p-2" *ngIf="loadingActionSubmission">
+            <div class="spinner-border"></div>
         </div>
     </div>
     <div class="boss-overlay" [ngClass]="{'boss-close': closing }" *ngIf="boss != null"></div>

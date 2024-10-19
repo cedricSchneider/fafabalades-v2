@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class NpcDialogueComponent implements OnInit, OnChanges {
   @Input() public npc: Npc;
+  @Input() public loadingActionSubmission: boolean;
   @Output() onClose: EventEmitter<void> = new EventEmitter<void>();
   public dialogueContent: string = '';
   public closing: boolean = false;
@@ -23,7 +24,7 @@ export class NpcDialogueComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges() {
-    if (this.npc != null) {
+    if (this.npc != null && !this.loadingActionSubmission) {
       setTimeout(() => { this.incDialogue() }, this.dialogueDelay);
     }
   }

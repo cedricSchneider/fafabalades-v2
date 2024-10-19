@@ -1,6 +1,6 @@
 .main-container {
     height: 100vh;
-    overflow-y: auto;
+    overflow-y: hidden;
     // that's weird but without that, some pages won't let you scroll
     background-color: #1a1a1a;
 }

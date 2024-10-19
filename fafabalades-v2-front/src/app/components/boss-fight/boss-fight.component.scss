@@ -35,7 +35,7 @@
 .boss-content {
     position: relative;
     left: 100%;
-    width: 700px;
+    width: 40%;
     height: 100vh;
     background-color: #1a1a1a;
     color: white;
@@ -60,11 +60,11 @@
 
 @keyframes slideInContent {
     from { left: 100%; }
-    to { left: calc(100% - 700px); }
+    to { left: 60%; }
 }
 
 @keyframes slideOutContent {
-    from { left: calc(100% - 700px); }
+    from { left: 60%; }
     to { left: 100%; }
 }
 

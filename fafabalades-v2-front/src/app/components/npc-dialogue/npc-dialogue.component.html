@@ -1,12 +1,17 @@
 
 <div class="dialogue-main-container" [style]="{ 'visibility': npc != null ? 'visible' : 'hidden' }">
     <div class="dialogue-content" *ngIf="npc != null" [ngClass]="{'dialogue-close': closing }">
-        <i (click)="close()" class="close-btn bi bi-x-lg"></i>
-        <div class="dialogue-header">
-            <img class="npc-pic" src="{{ npc.picture }}">
+        <div *ngIf="!loadingActionSubmission">
+            <i (click)="close()" class="close-btn bi bi-x-lg"></i>
+            <div class="dialogue-header">
+                <img class="npc-pic" src="{{ npc.picture }}">
+            </div>
+            <div class="dialogue-text">
+                {{ dialogueContent }}
+            </div>
         </div>
-        <div class="dialogue-text">
-            {{ dialogueContent }}
+        <div class="p-2" *ngIf="loadingActionSubmission">
+            <div class="spinner-border"></div>
         </div>
     </div>
     <div class="dialogue-overlay" [ngClass]="{'dialogue-close': closing }" *ngIf="npc != null"></div>

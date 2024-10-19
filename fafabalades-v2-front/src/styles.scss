@@ -50,11 +50,15 @@ body {
     }
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
 
 .user-marker {
     border-radius: 50%;
     border: 2px solid #cccccc;
 }
+
 .logged-marker {
     z-index: 5000 !important;
 }
@@ -90,6 +94,10 @@ body {
 }
 .npc-tooltip::before {
     border-bottom-color: transparent !important;
+}
+
+.cursor-inherit {
+    cursor: inherit;
 }
 
 .action-popup {

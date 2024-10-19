@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnInit, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, viewChild, ViewContainerRef } from '@angular/core';
 import * as L from 'leaflet';
 import { DrawSegmentElt } from '../../models/drawSegment';
 import { Profile } from '../../models/profile';
@@ -17,6 +17,9 @@ import { BossFightComponent } from '../../components/boss-fight/boss-fight.compo
 import { Chest } from '../../models/chest';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { InventoryComponent } from '../../components/inventory/inventory.component';
+import { ModalService } from '../../services/modal.service';
+import { ChestResultComponent } from '../../modals/chest-result/chest-result.component';
+import { Item } from '../../models/item';
 
 @Component({
   selector: 'app-demo',
@@ -68,9 +71,12 @@ export class DemoComponent implements OnInit, AfterViewInit {
   public displayMode: string = 'all';
 
   public loadingSubmitPath: boolean;
+  public loadingActionSubmission: boolean;
+  @ViewChild('inventoryComponent') inventoryComponent: InventoryComponent;
 
   constructor(
     public mapService: MapService,
+    private modalService: ModalService,
     private viewContainerRef: ViewContainerRef
   ) {}
 
@@ -98,15 +104,26 @@ export class DemoComponent implements OnInit, AfterViewInit {
     };
     this.color = this.profile.color;
 
-    for (let i = 1; i <= 1; i++) {
+    for (let i = 1; i <= 1 ; i++) {
       this.profile.inventory.push({
         id: i,
         name: 'KEY',
         displayName: 'Clé de coffre',
         description: 'Une clé standard, utile pour ouvrir les coffres',
-        picture: 'images/KEY.png'
+        picture: 'images/key.png',
+        consumedAt: null
       });
     }
+    // for (let i = 1; i <= 0; i++) {
+    //   this.profile.inventory.push({
+    //     id: i,
+    //     name: 'KEY',
+    //     displayName: 'Clé de coffre',
+    //     description: 'Une clé standard, utile pour ouvrir les coffres',
+    //     picture: 'images/key.png',
+    //     consumedAt: new Date().toISOString()
+    //   });
+    // }
   }
 
   private getUsers() {
@@ -216,8 +233,9 @@ export class DemoComponent implements OnInit, AfterViewInit {
       this.mapService.towers.forEach((tower) => {
         const latLng = L.latLng(this.mapService.convertToLatLng(tower.coords[0], tower.coords[1]));
         const marker = new L.Marker(latLng, { 
-          icon: L.icon({ 
-            iconUrl: 'icons/tower.png', 
+          icon: L.icon({
+            iconUrl: 'icons/tower.png',
+            className: 'cursor-inherit',
             iconSize: [20, 26],
             iconAnchor: [10, 13],
           })
@@ -238,10 +256,11 @@ export class DemoComponent implements OnInit, AfterViewInit {
       this.mapService.skyAreas.forEach((area) => {
         const latLng = L.latLng(this.mapService.convertToLatLng(area.coords[0], area.coords[1]));
         const marker = new L.Marker(latLng, {
-          icon: L.icon({ 
-            iconUrl: 'icons/arrowDown.png', 
+          icon: L.icon({
+            iconUrl: 'icons/arrowDown.png',
             iconSize: [20, 20],
             iconAnchor: [10, 10],
+            className: 'cursor-inherit',
           })
         }).bindTooltip(area.name, { permanent: true, direction: 'bottom', className: 'tower-tooltip', opacity: 1 });
         this.map.addLayer(marker);
@@ -260,10 +279,11 @@ export class DemoComponent implements OnInit, AfterViewInit {
       if (npc.mapId == this.currentMapId) {
         const latLng = L.latLng(this.mapService.convertToLatLng(npc.position[0], npc.position[1]));
         const marker = new L.Marker(latLng, { 
-          icon: L.icon({ 
-            iconUrl: npc.icon, 
+          icon: L.icon({
+            iconUrl: npc.icon,
             iconSize: [64, 64],
             iconAnchor: [32, 32],
+            className: 'cursor-inherit',
           })
         }).bindTooltip(npc.name, { permanent: true, direction: 'bottom', className: 'npc-tooltip', opacity: 1 });
         this.map.addLayer(marker);
@@ -282,10 +302,11 @@ export class DemoComponent implements OnInit, AfterViewInit {
       if (boss.mapId == this.currentMapId) {
         const latLng = L.latLng(this.mapService.convertToLatLng(boss.position[0], boss.position[1]));
         const marker = new L.Marker(latLng, { 
-          icon: L.icon({ 
-            iconUrl: boss.icon, 
+          icon: L.icon({
+            iconUrl: boss.icon,
             iconSize: [80, 80],
             iconAnchor: [40, 40],
+            className: 'cursor-inherit',
           })
         }).bindTooltip(boss.name, { permanent: true, direction: 'bottom', className: 'npc-tooltip', opacity: 1 });
         this.map.addLayer(marker);
@@ -304,10 +325,11 @@ export class DemoComponent implements OnInit, AfterViewInit {
       if (chest.mapId == this.currentMapId) {
         const latLng = L.latLng(this.mapService.convertToLatLng(chest.position[0], chest.position[1]));
         const marker = new L.Marker(latLng, { 
-          icon: L.icon({ 
-            iconUrl: 'icons/chest.png', 
+          icon: L.icon({
+            iconUrl: 'icons/chest.png',
             iconSize: [30, 25],
             iconAnchor: [15, 12],
+            className: 'cursor-inherit',
           })
         });
         this.map.addLayer(marker);
@@ -370,7 +392,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
             iconUrl: u.imageUrl, 
             iconSize: [30, 30],
             iconAnchor: [15, 15],
-            className: 'user-marker user-' + u.userId + (u.userId == this.profile.userId ? ' logged-marker' : '')
+            className: 'user-marker cursor-inherit user-' + u.userId + (u.userId == this.profile.userId ? ' logged-marker' : '')
           }),
         }).bindTooltip(u.username, { permanent: true, direction: 'bottom', className: 'user-tooltip', opacity: 1 });
         if (this.displayMode == 'all' || this.displayMode == 'path') {
@@ -525,7 +547,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
         if (!chest.marker.isPopupOpen()) {
           const component = this.viewContainerRef.createComponent(MapPinActionComponent);
           component.instance.action = () => { this.openChest(chest.entity) };
-          component.instance.disabled = this.profile.inventory.filter((x) => x.name == 'KEY').length == 0;
+          component.instance.disabled = this.profile.inventory.filter((x) => x.name == 'KEY' && x.consumedAt == null).length == 0;
           component.instance.buttonContent = component.instance.disabled ? 'Clé nécessaire' : 'Ouvrir';
           chest.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
@@ -547,24 +569,70 @@ export class DemoComponent implements OnInit, AfterViewInit {
 
   public talkToNpc(npc: Npc) {
     this.dialogueNpc = Object.assign({}, npc);
-    this.submitDrawing(false);
+    const pathToSend = this.computePathValidation();
+    this.loadingActionSubmission = true;
+    setTimeout(() => {
+      this.loadingActionSubmission = false;
+    }, 300);
+    // TODO send data to server
   }
 
   public fightBoss(boss: Boss) {
     this.fightingBoss = Object.assign({}, boss);
-    this.submitDrawing(false);
+    const pathToSend = this.computePathValidation();
+    this.loadingActionSubmission = true;
+    setTimeout(() => {
+      this.loadingActionSubmission = false;
+    }, 300);
+    // TODO send data to server
   }
 
   public openChest(chest: Chest) {
-    const key = this.profile.inventory.filter((x) => x.name == 'KEY')[0];
+    let data: { loading: boolean, content: Item[], chest: Chest } = { loading: true, content: [], chest: chest };
+    const key = this.profile.inventory.filter((x) => x.name == 'KEY' && x.consumedAt == null)[0];
+    const modalRef = this.modalService.open(ChestResultComponent, { size: 'xl' });
+    setTimeout(() => {
+      data.content = [{
+        id: new Date().getTime() + 1,
+        name: 'KEY',
+        displayName: 'Clé de coffre',
+        description: 'Une clé standard, utile pour ouvrir les coffres',
+        picture: 'images/key.png',
+        consumedAt: null
+      },
+      {
+        id: new Date().getTime() + 1,
+        name: 'CREDITS2500',
+        displayName: 'Crédits supplémentaires',
+        description: '2500 crédits à utiliser ou à offrir',
+        picture: 'images/credits.svg',
+        consumedAt: null
+      }];
+      // TODO remove this, will be done by ws subscription ?
+      this.profile.inventory = this.profile.inventory.concat(data.content);
+      this.refreshInventoryComponent();
+      data.loading = false;
+    }, 300);
+
+    modalRef.componentInstance.data = data;
+    modalRef.result.then(() => {
+    }).catch(() => {
+    });
 
     // consume key & chest (api call)
-
     const chestToRemove = this.chestMarkers.filter((x) => x.entity.id == chest.id)[0];
-    this.profile.inventory = this.profile.inventory.filter((x) => x.id != key.id);
+    key.consumedAt = new Date().toISOString();
+//    this.profile.inventory = this.profile.inventory.filter((x) => x.id != key.id);
     this.map.removeLayer(chestToRemove.marker);
     this.chestMarkers = this.chestMarkers.filter((x) => x.entity.id != chest.id);
-    this.submitDrawing(false);
+    const pathToSend = this.computePathValidation();
+    // TODO send data to server
+  }
+
+  private refreshInventoryComponent() {
+    if (this.inventoryComponent != null) {
+      this.inventoryComponent.computeItemsList();
+    }
   }
 
   public goToMap(mapId: number) {
@@ -697,6 +765,21 @@ export class DemoComponent implements OnInit, AfterViewInit {
     }
   }
 
+  public cancelDrawing() {
+    this.cleanDrawSegments(true);
+    this.disableAllPopups();
+    const user = this.users.filter((x) => x.userId == this.profile.userId)[0];
+    this.profile.position = user.position;
+    const latLng = L.latLng(this.mapService.convertToLatLng(user.position[0], user.position[1]));
+    if (this.profile.mapId != user.mapId) {
+      this.selectMap(user.mapId);
+    } else {
+      this.moveMarker(this.profile.userId, latLng);
+    }
+    this.profile.mapId = user.mapId;
+    this.drawingMode = false;
+  }
+
   public changeDisplayMode() {
 
   }
@@ -742,7 +825,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
     });
   }
 
-  public submitDrawing(stopDrawing: boolean = true) {
+  public computePathValidation(): PathRecordBody[] {
     const pathToSend: PathRecordBody[] = []; 
     if (this.drawSegments.length > 0) {
       const now = new Date().toISOString();
@@ -795,20 +878,26 @@ export class DemoComponent implements OnInit, AfterViewInit {
     
       this.cleanDrawSegments();
     }
-
     const user = this.users.filter((u) => u.userId == this.profile.userId)[0];
-    if (this.profile.mapId != user.mapId || pathToSend.length > 0) {
-      this.loadingSubmitPath = true;
-      // TODO send pathToSend & mapId to server
-      this.loadingSubmitPath = false;
-    }
-
     user.mapId = this.profile.mapId;
     user.position = this.profile.position;
 
-    if (stopDrawing) {
+    return pathToSend;
+  }
+
+  public submitDrawing() {
+    const user = this.users.filter((u) => u.userId == this.profile.userId)[0];
+    const prevMapId = user.mapId;
+    const pathToSend = this.computePathValidation();
+    if (this.profile.mapId != prevMapId || pathToSend.length > 0) {
+      this.loadingSubmitPath = true;
+      // TODO send pathToSend & mapId to server
       this.disableAllPopups();
       this.drawingMode = false;
+      this.loadingSubmitPath = false;
+    } else {
+      this.disableAllPopups();
+      this.drawingMode = false;  
     }
   }
 }

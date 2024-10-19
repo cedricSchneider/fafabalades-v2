@@ -4,4 +4,5 @@ export interface Item {
     displayName: string;
     description: string;
     picture: string;
+    consumedAt: string;
 }

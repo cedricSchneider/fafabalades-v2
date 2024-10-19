@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 export class BossFightComponent implements OnInit, OnChanges {
   @Input() public boss: Boss;
   @Input() public profile: Profile;
+  @Input() public loadingActionSubmission: boolean;
   @Output() onClose: EventEmitter<void> = new EventEmitter<void>();
   public closing: boolean = false;
   public hpAnimationDelay = 20;
@@ -22,6 +23,7 @@ export class BossFightComponent implements OnInit, OnChanges {
   public displayHp: number = 0;
   public currentLifeAnimationId: any = null;
 
+  // TODO subscribe to boss damage to update this ? (maybe not because of ngOnchages ? let's test)
   public maxDamage: number;
   public hpCost: number = 10;
   public damage: number = null;
@@ -31,7 +33,7 @@ export class BossFightComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges() {
-    if (this.boss != null) {
+    if (this.boss != null && !this.loadingActionSubmission) {
       this.displayHp = 0;
       this.damage = null;
       this.maxDamage = Math.min(this.boss.life, Math.floor(this.profile.credits / this.hpCost));
@@ -86,8 +88,9 @@ export class BossFightComponent implements OnInit, OnChanges {
   }
 
   public validateForm() {
-    this.inflictDamage(this.damage);
     this.profile.credits -= this.damage * this.hpCost;
+    // TODO maybe remove because of ws subscription
+    this.inflictDamage(this.damage);
     this.damage = null;
   }
 
@@ -97,5 +100,6 @@ export class BossFightComponent implements OnInit, OnChanges {
     let totalOffset = this.boss.life - this.displayHp;
     let offset = totalOffset / (this.hpAnimationDuration / this.hpAnimationDelay);
     this.runLifeAnimation(offset);
+    this.maxDamage = Math.min(this.boss.life, Math.floor(this.profile.credits / this.hpCost));
   }
 }

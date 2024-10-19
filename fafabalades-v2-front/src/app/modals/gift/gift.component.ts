@@ -1,0 +1,55 @@
+import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit } from '@angular/core';
+import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { UserMap } from '../../models/userMap';
+import { debounceTime, map, Observable, OperatorFunction } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { Profile } from '../../models/profile';
+import { Item } from '../../models/item';
+
+@Component({
+  selector: 'app-gift',
+  standalone: true,
+  imports: [CommonModule, NgbModule, FormsModule],
+  templateUrl: './gift.component.html',
+  styleUrl: './gift.component.scss'
+})
+export class GiftComponent implements OnInit {
+  @Input() public users: UserMap[] = [];
+  @Input() public profile: Profile;
+  @Input() public item: Item;
+
+  public selectedUser: UserMap;
+  public userSearchModel: UserMap;
+
+  constructor(
+    public activeModal: NgbActiveModal,
+  ) {}
+
+  ngOnInit(): void {
+    
+  }
+
+	search: OperatorFunction<string, readonly UserMap[]> = (text$: Observable<string>) =>
+		text$.pipe(
+			debounceTime(200),
+			map((term: string) =>
+				term === ''
+					? []
+					: this.users.filter((u) => u.userId != this.profile.userId && u.username.toLowerCase().indexOf(term.toLowerCase()) > -1).slice(0, 10),
+			),
+		);
+
+	formatter = (x: UserMap) => x.username;
+
+  public selectUser(value: any) {
+    if (value.userId != undefined) {
+      this.selectedUser = this.userSearchModel;
+      this.userSearchModel = null;
+    }
+  }
+
+  public close() {
+    this.activeModal.dismiss();
+  }
+}

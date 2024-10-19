@@ -1,9 +1,36 @@
-<div class="inventory-container">
-    <div *ngFor="let item of inventory" class="item"  [ngbTooltip]="tooltipContent" (mouseover)="hoverItem = item">
-        <img src="{{ item.picture }}">
+<div class="inventory-parent-container">
+    <div class="inventory-container items-list">
+        <div *ngFor="let item of currentItems" class="item" [ngbTooltip]="tooltipContent" (mouseover)="hoverItem = item" placement="top">
+            <div ngbDropdown class="dropdown-container" placement="end start">
+                <div class="item-img-container">
+                    <img src="{{ item.picture }}" id="item-{{ item.id }}" ngbDropdownToggle>
+                </div>
+                <div ngbDropdownMenu [attr.aria-labelledby]="'item-' + item.id">
+                    <button *ngIf="itemUseFunctions.has(item.name)" (click)="itemUseFunctions.get(item.name)(item)" ngbDropdownItem>
+                        <i class="bi bi-star-fill me-1"></i> Utiliser
+                    </button>
+                    <button ngbDropdownItem (click)="sendGift(item)">
+                        <i class="bi bi-gift-fill me-1"></i> Offrir
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="currentItems.length == 0">
+            Votre inventaire est vide pour le moment.
+        </div>
     </div>
-    <div *ngIf="inventory.length == 0">
-        Votre inventaire est vide pour le moment.
+
+    <div class="consumed-items-container" *ngIf="consumedItems.length > 0">
+        <h5 (click)="collapseConsumed = !collapseConsumed" class="consumed-items-title">Objets utilisés ({{ consumedItems.length }})</h5>
+        <div [(ngbCollapse)]="collapseConsumed" class="collapse-container">
+            <div class="items-list">
+                <div *ngFor="let item of consumedItems" class="item" [ngbTooltip]="tooltipContent" (mouseover)="hoverItem = item">
+                    <div class="item-img-container">
+                        <img src="{{ item.picture }}">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -11,5 +38,13 @@
     <h5>{{ hoverItem.displayName }}</h5>
     <div class="small">
         {{ hoverItem.description }}
+    </div>
+    <div class="small mt-1" *ngIf="hoverItem.consumedAt != null">
+        <span *ngIf="hoverItem.name == 'KEY'">
+            Clé utilisée le {{ hoverItem.consumedAt | date:'dd/MM/yyyy' }}
+        </span>
+        <span *ngIf="hoverItem.name.startsWith('CREDITS')">
+            Crédits consommés le {{ hoverItem.consumedAt | date:'dd/MM/yyyy' }}
+        </span>
     </div>
 </ng-template>
