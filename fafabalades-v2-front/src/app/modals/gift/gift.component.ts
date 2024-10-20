@@ -49,6 +49,24 @@ export class GiftComponent implements OnInit {
     }
   }
 
+  public validateGift() {
+    // TODO call api & remove this (done by ws subscription ?)
+    this.profile.giftedItems.push({
+      id: new Date().getTime(),
+      itemId: this.item.id,
+      itemDescription: this.item.description,
+      itemDisplayName: this.item.displayName,
+      itemName: this.item.name,
+      itemPicture: this.item.picture,
+      recipienId: this.selectedUser.userId,
+      recipientImageUrl: this.selectedUser.imageUrl,
+      recipientUsername: this.selectedUser.username,
+      date: new Date().toISOString(),
+    });
+    this.profile.inventory = this.profile.inventory.filter((x) => x.id != this.item.id);
+    this.activeModal.close();
+  }
+
   public close() {
     this.activeModal.dismiss();
   }

@@ -13,4 +13,5 @@ export class MapPinActionComponent {
   public buttonContent: string;
   public action: () => void;
   public disabled: boolean = false;
+  public iconId: string = null;
 }

@@ -28,7 +28,7 @@
     height: 100%;
     overflow-y: auto;
     .item {
-        border: 2px solid #dddddd;  
+        border: 2px solid #dddddd;
         border-radius: 0.5rem;
         background-color: transparent;
         width: 96px;
@@ -54,11 +54,26 @@
 .consumed-items-container {
     display: flex;
     flex-direction: column;
-    max-height: 40%;
+    max-height: calc(40% - 24px - 1.5rem);
     .collapse-container {
         height: calc(100% - 24px - 0.5rem);
     }
     .consumed-items-title {
+        cursor: pointer;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.gifted-items-container {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(40% - 24px - 1.5rem);
+    .collapse-container {
+        height: calc(100% - 24px - 0.5rem);
+    }
+    .gifted-items-title {
         cursor: pointer;
         &:hover {
             text-decoration: underline;

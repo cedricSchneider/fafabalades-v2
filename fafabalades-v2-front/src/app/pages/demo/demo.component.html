@@ -46,4 +46,4 @@
 </div>
 
 <app-npc-dialogue [npc]="dialogueNpc" [loadingActionSubmission]="loadingActionSubmission"></app-npc-dialogue>
-<app-boss-fight [boss]="fightingBoss" [profile]="profile" [loadingActionSubmission]="loadingActionSubmission"></app-boss-fight>
+<app-boss-fight [boss]="fightingBoss" [profile]="profile" [loadingActionSubmission]="loadingActionSubmission" (onDamage)="onDamage()"></app-boss-fight>

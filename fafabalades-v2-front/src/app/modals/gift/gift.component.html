@@ -3,17 +3,35 @@
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close()"></button>
 </div>
 <div class="modal-body">
-    <input
-        id="typeahead-template"
-        type="text"
-        class="form-control col"
-        [(ngModel)]="userSearchModel"
-        (ngModelChange)="selectUser($event)"
-        [ngbTypeahead]="search"
-        [resultTemplate]="rt"
-        [inputFormatter]="formatter"
-    />
-    {{ selectedUser }}
+    <div class="row">
+        <div class="offset-2 col-8">
+            <input
+                id="typeahead-template"
+                type="text"
+                class="form-control col"
+                [(ngModel)]="userSearchModel"
+                (ngModelChange)="selectUser($event)"
+                [ngbTypeahead]="search"
+                [resultTemplate]="rt"
+                [inputFormatter]="formatter"
+                placeholder="à qui est destiné ce cadeau ?"
+            />
+        </div>
+    </div>
+    <div class="row mt-4" *ngIf="selectedUser != null">
+        <div class="col-12 transaction-summary">
+            <div class="item-img-container">
+                <img src="{{ item.picture }}">
+            </div>
+            <i class="bi bi-arrow-right-circle-fill"></i>
+            <img [src]="selectedUser.imageUrl" class="selected-user-avatar me-2" />
+        </div>
+        <div class="col-12 mt-3 text-center">
+            <button class="btn btn-primary" (click)="validateGift()">
+                <i class="bi bi-gift-fill me-1"></i> Envoyer un cadeau à {{ selectedUser.username }}
+            </button>
+        </div>
+    </div>
 </div>
 
 <ng-template #rt let-r="result" let-t="term">

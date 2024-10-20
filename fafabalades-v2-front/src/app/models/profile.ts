@@ -1,3 +1,4 @@
+import { GiftedItem } from "./giftedItem";
 import { Item } from "./item";
 
 export interface Profile {
@@ -7,4 +8,5 @@ export interface Profile {
     position: number[];
     mapId: number;
     inventory: Item[];
+    giftedItems: GiftedItem[];
 }

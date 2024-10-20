@@ -6,6 +6,7 @@ import { Profile } from '../../models/profile';
 import { ModalService } from '../../services/modal.service';
 import { UserMap } from '../../models/userMap';
 import { GiftComponent } from '../../modals/gift/gift.component';
+import { GiftedItem } from '../../models/giftedItem';
 
 @Component({
   selector: 'app-inventory',
@@ -22,8 +23,10 @@ export class InventoryComponent implements OnInit, OnChanges {
   public consumedItems: Item[];
 
   public collapseConsumed: boolean = true;
+  public collapseGifted: boolean = true;
 
   public hoverItem: Item;
+  public hoverGiftedItem: GiftedItem;
 
   public itemUseFunctions: Map<string, (item: Item) => void>;
 
@@ -47,6 +50,16 @@ export class InventoryComponent implements OnInit, OnChanges {
     this.itemUseFunctions = new Map<string, (item: Item) => void>();
     this.itemUseFunctions.set('CREDITS2500', this.useCredits2500());
   }
+
+  public clickCollapseConsumed() {
+    this.collapseConsumed = !this.collapseConsumed;
+    this.collapseGifted = true;
+  }
+
+  public clickCollapseGifted() {
+    this.collapseGifted = !this.collapseGifted;
+    this.collapseConsumed = true;
+  }
   
   public sendGift(item: Item) {
     const modalRef = this.modalService.open(GiftComponent, { size: 'lg' });
@@ -54,6 +67,7 @@ export class InventoryComponent implements OnInit, OnChanges {
     modalRef.componentInstance.users = this.users;
     modalRef.componentInstance.profile = this.profile;
     modalRef.result.then(() => {
+      this.computeItemsList();
     }).catch(() => {
     });
   }

@@ -16,7 +16,7 @@ export class BossFightComponent implements OnInit, OnChanges {
   @Input() public boss: Boss;
   @Input() public profile: Profile;
   @Input() public loadingActionSubmission: boolean;
-  @Output() onClose: EventEmitter<void> = new EventEmitter<void>();
+  @Output() onDamage: EventEmitter<void> = new EventEmitter<void>();
   public closing: boolean = false;
   public hpAnimationDelay = 20;
   public hpAnimationDuration = 500;
@@ -70,7 +70,7 @@ export class BossFightComponent implements OnInit, OnChanges {
     this.closing = true;
     setTimeout(() => {
       this.boss = null;
-      this.onClose.emit();
+      // this.onClose.emit();
       this.closing = false;
     }, 600);
   }
@@ -101,5 +101,7 @@ export class BossFightComponent implements OnInit, OnChanges {
     let offset = totalOffset / (this.hpAnimationDuration / this.hpAnimationDelay);
     this.runLifeAnimation(offset);
     this.maxDamage = Math.min(this.boss.life, Math.floor(this.profile.credits / this.hpCost));
+    console.log(this.onDamage);
+    this.onDamage.emit();
   }
 }

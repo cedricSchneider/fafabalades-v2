@@ -100,11 +100,12 @@ export class DemoComponent implements OnInit, AfterViewInit {
       credits: 10000,
       position: [0,0],
       mapId: 2,
-      inventory: []
+      inventory: [],
+      giftedItems: []
     };
     this.color = this.profile.color;
 
-    for (let i = 1; i <= 1 ; i++) {
+    for (let i = 1; i <= 1; i++) {
       this.profile.inventory.push({
         id: i,
         name: 'KEY',
@@ -114,14 +115,28 @@ export class DemoComponent implements OnInit, AfterViewInit {
         consumedAt: null
       });
     }
-    // for (let i = 1; i <= 0; i++) {
+    // for (let i = 1; i <= 40; i++) {
     //   this.profile.inventory.push({
-    //     id: i,
+    //     id: 100 + i,
     //     name: 'KEY',
     //     displayName: 'Clé de coffre',
     //     description: 'Une clé standard, utile pour ouvrir les coffres',
     //     picture: 'images/key.png',
     //     consumedAt: new Date().toISOString()
+    //   });
+    // }
+    // for (let i = 1; i <= 30; i++) {
+    //   this.profile.giftedItems.push({
+    //     id: i,
+    //     itemId: 300 + i,
+    //     itemDescription: 'Une clé standard, utile pour ouvrir les coffres',
+    //     itemDisplayName: 'Clé de coffre',
+    //     itemName: 'KEY',
+    //     itemPicture: 'images/key.png',
+    //     recipienId: '2',
+    //     recipientImageUrl: 'https://static-cdn.jtvnw.net/jtv_user_pictures/609de61e-b580-4e80-bef4-fa814f1b5bf9-profile_image-300x300.png',
+    //     recipientUsername: 'farore',
+    //     date: new Date().toISOString(),
     //   });
     // }
   }
@@ -444,6 +459,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
           const component = this.viewContainerRef.createComponent(MapPinActionComponent);
           component.instance.action = () => { this.goToMap(1) };
           component.instance.buttonContent = 'Activer la tour';
+          component.instance.iconId = 'arrow-up-circle';
           tower.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
             closeButton: false,
@@ -470,6 +486,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
           const component = this.viewContainerRef.createComponent(MapPinActionComponent);
           component.instance.action = () => { this.goToMap(2) };
           component.instance.buttonContent = 'Retour à la surface';
+          component.instance.iconId = 'arrow-down-circle';
           area.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
             closeButton: false,
@@ -496,6 +513,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
           const component = this.viewContainerRef.createComponent(MapPinActionComponent);
           component.instance.action = () => { this.talkToNpc(npc.entity) };
           component.instance.buttonContent = 'Parler';
+          component.instance.iconId = 'chat-left-dots';
           npc.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
             closeButton: false,
@@ -522,6 +540,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
           const component = this.viewContainerRef.createComponent(MapPinActionComponent);
           component.instance.action = () => { this.fightBoss(boss.entity) };
           component.instance.buttonContent = 'Attaquer';
+          component.instance.iconId = 'SWORDS';
           boss.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
             closeButton: false,
@@ -549,6 +568,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
           component.instance.action = () => { this.openChest(chest.entity) };
           component.instance.disabled = this.profile.inventory.filter((x) => x.name == 'KEY' && x.consumedAt == null).length == 0;
           component.instance.buttonContent = component.instance.disabled ? 'Clé nécessaire' : 'Ouvrir';
+          component.instance.iconId = 'key';
           chest.marker.bindPopup(L.popup({
             content: component.location.nativeElement,
             closeButton: false,
@@ -585,6 +605,12 @@ export class DemoComponent implements OnInit, AfterViewInit {
       this.loadingActionSubmission = false;
     }, 300);
     // TODO send data to server
+  }
+
+  // TODO probably remove, will be done by ws subscription
+  public onDamage() {
+    const boss = this.bosses.filter((x) => x.id == this.fightingBoss.id)[0];
+    boss.life = this.fightingBoss.life;
   }
 
   public openChest(chest: Chest) {
