@@ -1,13 +1,20 @@
 
 <div class="dialogue-main-container" [style]="{ 'visibility': npc != null ? 'visible' : 'hidden' }">
     <div class="dialogue-content" *ngIf="npc != null" [ngClass]="{'dialogue-close': closing }">
-        <div *ngIf="!loadingActionSubmission">
+        <div *ngIf="!loadingActionSubmission" class="d-flex flex-column h-100">
             <i (click)="close()" class="close-btn bi bi-x-lg"></i>
             <div class="dialogue-header">
                 <img class="npc-pic" src="{{ npc.picture }}">
             </div>
             <div class="dialogue-text">
                 {{ dialogueContent }}
+            </div>
+            <div class="rewards-content" *ngIf="showRewards">
+                <div *ngFor="let item of dialogueResult.rewards" class="item" [ngbTooltip]="tooltipContent" (mouseover)="hoverItem = item">
+                    <div class="item-img-container">
+                        <img src="{{ item.picture }}">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="p-2" *ngIf="loadingActionSubmission">
@@ -16,3 +23,10 @@
     </div>
     <div class="dialogue-overlay" [ngClass]="{'dialogue-close': closing }" *ngIf="npc != null"></div>
 </div>
+
+<ng-template #tooltipContent>
+    <h5>{{ hoverItem.displayName }}</h5>
+    <div class="small">
+        {{ hoverItem.description }}
+    </div>
+</ng-template>

@@ -6,6 +6,7 @@ import { debounceTime, map, Observable, OperatorFunction } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { Profile } from '../../models/profile';
 import { Item } from '../../models/item';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-gift',
@@ -24,6 +25,7 @@ export class GiftComponent implements OnInit {
 
   constructor(
     public activeModal: NgbActiveModal,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -64,6 +66,7 @@ export class GiftComponent implements OnInit {
       date: new Date().toISOString(),
     });
     this.profile.inventory = this.profile.inventory.filter((x) => x.id != this.item.id);
+    this.toastr.success('Cadeau envoyé !');
     this.activeModal.close();
   }
 

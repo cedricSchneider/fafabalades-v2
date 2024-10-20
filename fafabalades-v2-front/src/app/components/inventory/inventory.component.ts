@@ -7,6 +7,7 @@ import { ModalService } from '../../services/modal.service';
 import { UserMap } from '../../models/userMap';
 import { GiftComponent } from '../../modals/gift/gift.component';
 import { GiftedItem } from '../../models/giftedItem';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-inventory',
@@ -30,7 +31,10 @@ export class InventoryComponent implements OnInit, OnChanges {
 
   public itemUseFunctions: Map<string, (item: Item) => void>;
 
-  constructor(private modalService: ModalService) {}
+  constructor(
+    private modalService: ModalService,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
     this.initUseFunctions();
@@ -78,6 +82,7 @@ export class InventoryComponent implements OnInit, OnChanges {
       // TODO remove because subscription will perform this
       this.profile.credits += 2500;
       item.consumedAt = new Date().toISOString();
+      this.toastr.success('Crédits ajoutés !');
       this.computeItemsList();
     }
   }

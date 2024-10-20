@@ -20,6 +20,8 @@ import { InventoryComponent } from '../../components/inventory/inventory.compone
 import { ModalService } from '../../services/modal.service';
 import { ChestResultComponent } from '../../modals/chest-result/chest-result.component';
 import { Item } from '../../models/item';
+import { RideCreationComponent } from '../../modals/ride-creation/ride-creation.component';
+import { NpcDialogue } from '../../models/npcDialogue';
 
 @Component({
   selector: 'app-demo',
@@ -51,6 +53,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
   private npcMarkers: MapPin<Npc>[] = [];
   private npcs: Npc[] = [];
   public dialogueNpc: Npc = null;
+  public dialogueNpcResult: NpcDialogue = null;
 
   private bossMarkers: MapPin<Boss>[] = [];
   private bosses: Boss[]= [];
@@ -172,8 +175,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
       position: [-3580, 1810],
       icon: 'https://www.zeldadungeon.net/wiki/images/thumb/4/4f/Tulin_-_TotK_key_art_nobg.png/400px-Tulin_-_TotK_key_art_nobg.png',
       picture: 'https://www.zeldadungeon.net/wiki/images/thumb/4/4f/Tulin_-_TotK_key_art_nobg.png/400px-Tulin_-_TotK_key_art_nobg.png',
-      dialogueContent: 'Salut voyageur, je suis Babil du Village Piaf !\nJ\'aime faire tomber le loot dans le vide ouais ouais ouais !',
-      dialogueSound: '',
+      alreadyTalked: false
     }]
   }
 
@@ -591,20 +593,49 @@ export class DemoComponent implements OnInit, AfterViewInit {
     this.dialogueNpc = Object.assign({}, npc);
     const pathToSend = this.computePathValidation();
     this.loadingActionSubmission = true;
+    // TODO send data to server
     setTimeout(() => {
+      let dialogueResult: NpcDialogue;
+      // TODO, remove, result handled by api
+      if (!this.dialogueNpc.alreadyTalked) {
+        dialogueResult = {
+          content: 'Salut voyageur, je suis Babil du Village Piaf !\nMoi mon truc c\'est l\'action, rester les bras croisés sans rien faire quand le monde est en danger très peu pour moi ! Cependant, mon père ne me laisse pas partir à l\'aventure, il dit que je suis trop jeune, pourtant mes talents à l\'arc ne sont plus à démontrer, n\'en déplaise aux médisants !\nJ\'ai d\'ailleurs entendu dire qu\'on m\'avait surnommé "Babil la merde" dans la région de Firone, quelle honte franchement, tous des jaloux si tu veux mon avis !\nBref, je tenais à t\'offrir ceci, fais en bon usage dans ton aventure !',
+          sound: '',
+          rewards: [
+            {
+              id: new Date().getTime(),
+              name: 'CREDITS2500',
+              displayName: 'Crédits supplémentaires',
+              description: '2500 crédits à utiliser ou à offrir',
+              picture: 'images/credits.svg',
+              consumedAt: null
+            }
+          ]
+        };  
+      } else {
+        dialogueResult = {
+          content: 'Re-bonjour voyageur ! Je t\'ai déjà offert tout ce que j\'avais à donner aujourd\'hui, mais reviens me voir demain si tu veux, j\'aurai probablement du nouveau pour toi !',
+          sound: '',
+          rewards: []
+        }
+      }
+      // TDOD remove that, handled by api
+      npc.alreadyTalked = true;
+      this.dialogueNpcResult = dialogueResult;
+      this.profile.inventory = this.profile.inventory.concat(dialogueResult.rewards);
+      this.refreshInventoryComponent();
       this.loadingActionSubmission = false;
     }, 300);
-    // TODO send data to server
   }
 
   public fightBoss(boss: Boss) {
     this.fightingBoss = Object.assign({}, boss);
     const pathToSend = this.computePathValidation();
     this.loadingActionSubmission = true;
+    // TODO send data to server
     setTimeout(() => {
       this.loadingActionSubmission = false;
     }, 300);
-    // TODO send data to server
   }
 
   // TODO probably remove, will be done by ws subscription
@@ -627,7 +658,7 @@ export class DemoComponent implements OnInit, AfterViewInit {
         consumedAt: null
       },
       {
-        id: new Date().getTime() + 1,
+        id: new Date().getTime() + 2,
         name: 'CREDITS2500',
         displayName: 'Crédits supplémentaires',
         description: '2500 crédits à utiliser ou à offrir',
@@ -925,5 +956,13 @@ export class DemoComponent implements OnInit, AfterViewInit {
       this.disableAllPopups();
       this.drawingMode = false;  
     }
+  }
+
+  public openNewRide() {
+    const modalRef = this.modalService.open(RideCreationComponent, { size: 'md' });
+    modalRef.componentInstance.profile = this.profile;
+    modalRef.result.then(() => {
+    }).catch(() => {
+    });
   }
 }

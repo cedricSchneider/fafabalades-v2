@@ -5,6 +5,6 @@ export interface Npc {
     mapId: number;
     icon: string;
     picture: string;
-    dialogueContent: string;
-    dialogueSound: string;
+    // TODO remove this, handled by api
+    alreadyTalked: boolean;
 }
